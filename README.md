@@ -53,7 +53,7 @@ npm install
 
 Exemple de fichier `.env` :
 ```
-DB_CONNECTION=mongodb+srv://<username>:<password>@cluster0.mongodb.net/obs-scoring-app
+DB_CONNECTION=mongodb://localhost:27017/obs
 PORT=3000
 ```
 
@@ -81,7 +81,7 @@ npm run serve
 
 ## Utilisation
 
-1. Accédez à l'interface frontend à l'adresse `http://localhost:8080` pour créer et gérer les matchs.
+1. Accédez à l'interface frontend à l'adresse `http://localhost:5173` pour créer et gérer les matchs.
 2. Les scores sont mis à jour en temps réel et peuvent être récupérés dans OBS via l'API.
 
 ## Exemples de commandes
