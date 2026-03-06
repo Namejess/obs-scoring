@@ -1,0 +1,49 @@
+{
+  "name": "obs-scoring",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start:emulator": "concurrently --kill-others-on-fail --names \"SERVER,WEB,ANDROID\" --prefix-colors \"cyan,green,yellow\" \"pnpm dev:server\" \"pnpm dev:web\" \"bash scripts/start-emulator.sh\"",
+    "start:phone": "concurrently --kill-others-on-fail --names \"SERVER,WEB,MOBILE\" --prefix-colors \"cyan,green,yellow\" \"pnpm dev:server\" \"pnpm dev:web\" \"pnpm --filter @obs-scoring/mobile tunnel\"",
+    "dev": "turbo dev",
+    "dev:server": "pnpm --filter @obs-scoring/server dev",
+    "dev:web": "pnpm --filter @obs-scoring/web dev",
+    "dev:mobile": "pnpm --filter @obs-scoring/mobile dev",
+    "build": "turbo build",
+    "build:server": "pnpm --filter @obs-scoring/server build",
+    "build:web": "pnpm --filter @obs-scoring/web build",
+    "start:server": "pnpm --filter @obs-scoring/server start",
+    "test": "turbo test",
+    "test:unit": "turbo test:unit",
+    "test:integration": "turbo test:integration",
+    "lint": "turbo lint",
+    "typecheck": "turbo lint",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,vue,js,json,css}\"",
+    "format:check": "prettier --check \"packages/**/*.{ts,tsx,vue,js,json,css}\"",
+    "db:push": "pnpm --filter @obs-scoring/server db:push",
+    "db:studio": "pnpm --filter @obs-scoring/server db:studio",
+    "db:migrate": "pnpm --filter @obs-scoring/server db:migrate",
+    "mobile": "pnpm --filter @obs-scoring/mobile start",
+    "mobile:tunnel": "pnpm --filter @obs-scoring/mobile tunnel",
+    "mobile:android": "pnpm --filter @obs-scoring/mobile android",
+    "mobile:ios": "pnpm --filter @obs-scoring/mobile ios",
+    "mobile:build:android": "pnpm --filter @obs-scoring/mobile build:android",
+    "mobile:build:ios": "pnpm --filter @obs-scoring/mobile build:ios",
+    "mobile:build:preview": "pnpm --filter @obs-scoring/mobile build:preview",
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/.turbo .turbo",
+    "clean:build": "rm -rf packages/*/dist packages/server/prisma/*.db"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "concurrently": "^9.2.1",
+    "prettier": "^3.2.0",
+    "turbo": "^2.3.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

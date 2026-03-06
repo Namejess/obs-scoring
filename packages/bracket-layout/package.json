@@ -1,0 +1,39 @@
+{
+  "name": "@obs-scoring/bracket-layout",
+  "version": "0.1.0",
+  "description": "High-performance bracket layout engine for tournament visualization",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "bracket",
+    "tournament",
+    "layout",
+    "esports",
+    "start.gg"
+  ],
+  "license": "MIT"
+}

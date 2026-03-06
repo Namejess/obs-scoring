@@ -1,0 +1,62 @@
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Match {
+  id           Int          @id @default(autoincrement())
+  player1      String
+  player2      String
+  team1        String?
+  team2        String?
+  player1Score Int          @default(0)
+  player2Score Int          @default(0)
+  isCurrent    Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  
+  // start.gg integration
+  startggSetId String?      @unique
+  startggSet   StartggSet?  @relation(fields: [startggSetId], references: [id])
+}
+
+model StartggConfig {
+  id             Int      @id @default(1)
+  apiKey         String
+  tournamentSlug String?
+  eventId        String?
+  pollIntervalMs Int      @default(15000)
+  enabled        Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+}
+
+model StartggSet {
+  id            String   @id
+  eventId       String
+  eventName     String?
+  phaseId       String
+  phaseName     String?
+  phaseGroupId  String
+  fullRoundText String
+  identifier    String?
+  round         Int
+  state         Int      @default(1)
+  bestOf        Int      @default(3)
+  player1Tag    String
+  player2Tag    String
+  player1Prefix String?
+  player2Prefix String?
+  player1Score  Int      @default(0)
+  player2Score  Int      @default(0)
+  winnerId      String?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  updatedAt     DateTime @updatedAt
+  
+  match         Match?
+}
