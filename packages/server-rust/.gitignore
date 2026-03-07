@@ -1,0 +1,15 @@
+# Rust build artifacts
+target/
+
+# SQLite database (data directory tracked, but not the DB itself)
+data/*.db
+data/*.db-journal
+data/*.db-shm
+data/*.db-wal
+
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/

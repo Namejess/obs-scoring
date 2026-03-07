@@ -1,0 +1,61 @@
+[package]
+name = "obs-scoring-server"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "obs-scoring-server"
+path = "src/main.rs"
+
+[dependencies]
+# Web framework
+axum = { version = "0.7", features = ["ws", "macros"] }
+axum-extra = { version = "0.9", features = ["typed-header"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+tower = { version = "0.4", features = ["full"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "fs"] }
+
+# Serialisation
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Database SQLite async
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "macros", "migrate", "chrono"] }
+
+# HTTP client (proxy GraphQL start.gg)
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
+
+# Date/time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# Env
+dotenvy = "0.15"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# UUID
+uuid = { version = "1", features = ["v4"] }
+
+# Cache en mémoire avec TTL
+moka = { version = "0.12", features = ["future"] }
+
+# Socket.io (tokio-tungstenite pour WebSocket natif)
+tokio-tungstenite = "0.21"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true
