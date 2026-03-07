@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use moka::future::Cache;
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::time::Duration;
 
 use crate::{
@@ -10,6 +10,35 @@ use crate::{
 };
 
 const API_URL: &str = "https://api.start.gg/gql/alpha";
+
+// ─── Flexible int deserializer ────────────────────────────────────────────────
+// start.gg retourne parfois state comme entier (1,2,3) et parfois comme string
+// ("COMPLETED", "ACTIVE", "PENDING"...). On mappe les deux vers Option<i64>.
+
+fn deserialize_flex_int<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = serde_json::Value::deserialize(deserializer)?;
+    match &value {
+        serde_json::Value::Number(n) => Ok(n.as_i64()),
+        serde_json::Value::String(s) => {
+            // Mapper les strings connues de start.gg
+            let mapped = match s.as_str() {
+                "CREATED"    => Some(1),
+                "ACTIVE"     => Some(2),
+                "COMPLETED"  => Some(3),
+                "LOCKED"     => Some(4),
+                "CALLED"     => Some(6),
+                "QUEUED"     => Some(7),
+                _ => s.parse::<i64>().ok(),
+            };
+            Ok(mapped)
+        }
+        serde_json::Value::Null => Ok(None),
+        _ => Ok(None),
+    }
+}
 
 // ─── GraphQL request/response envelope ───────────────────────────────────────
 
@@ -41,6 +70,7 @@ pub struct GqlTournament {
     pub start_at: Option<i64>,
     pub end_at: Option<i64>,
     pub num_attendees: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_flex_int")]
     pub state: Option<i64>,
     pub images: Option<Vec<GqlImage>>,
     // Champ peuplé uniquement via getTournamentEvents — sinon []
@@ -61,6 +91,7 @@ pub struct GqlEvent {
     pub id: i64,
     pub name: String,
     pub slug: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_flex_int")]
     pub state: Option<i64>,
     pub num_entrants: Option<i64>,
     #[serde(rename = "type")]
@@ -73,6 +104,7 @@ pub struct GqlEvent {
 pub struct GqlPhase {
     pub id: i64,
     pub name: String,
+    #[serde(default, deserialize_with = "deserialize_flex_int")]
     pub state: Option<i64>,
     pub bracket_type: Option<String>,
     pub phase_groups: Option<GqlPhaseGroupsPage>,
@@ -88,6 +120,7 @@ pub struct GqlPhaseGroupsPage {
 pub struct GqlPhaseGroup {
     pub id: i64,
     pub display_identifier: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_flex_int")]
     pub state: Option<i64>,
 }
 
@@ -107,6 +140,7 @@ pub struct GqlSet {
     pub identifier: Option<String>,
     pub full_round_text: Option<String>,
     pub round: Option<i64>,
+    #[serde(default, deserialize_with = "deserialize_flex_int")]
     pub state: Option<i64>,
     pub winner_id: Option<i64>,
     pub total_games: Option<i64>,
