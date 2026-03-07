@@ -11,7 +11,7 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 #[derive(Debug, Deserialize)]
@@ -45,6 +45,91 @@ pub async fn get_config(State(state): State<Arc<AppState>>) -> impl IntoResponse
             })),
         )
             .into_response(),
+        Err(e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse::new(e.to_string())),
+        )
+            .into_response(),
+    }
+}
+
+/// PUT /api/startgg/config
+#[derive(Debug, Deserialize, Serialize)]
+pub struct PutConfigBody {
+    pub api_key: Option<String>,
+    pub tournament_slug: Option<String>,
+    pub event_id: Option<String>,
+    pub poll_interval_ms: Option<i64>,
+    pub enabled: Option<bool>,
+}
+
+pub async fn put_config(
+    State(state): State<Arc<AppState>>,
+    Json(body): Json<PutConfigBody>,
+) -> impl IntoResponse {
+    // Read current config first
+    let current = sqlx::query_as!(
+        crate::models::StartggConfig,
+        r#"SELECT id, api_key, tournament_slug, event_id, poll_interval_ms, enabled,
+           updated_at as "updated_at: _" FROM startgg_config WHERE id = 1"#
+    )
+    .fetch_optional(&state.pool)
+    .await;
+
+    let (old_api_key, old_slug, old_event_id, old_interval, old_enabled) = match current {
+        Ok(Some(c)) => (c.api_key, c.tournament_slug, c.event_id, c.poll_interval_ms, c.enabled),
+        _ => (String::new(), None, None, 15000, false),
+    };
+
+    let new_api_key = body.api_key.as_deref().unwrap_or(&old_api_key).to_string();
+    let new_slug = body.tournament_slug.as_deref().or(old_slug.as_deref());
+    let new_event_id = body.event_id.as_deref().or(old_event_id.as_deref());
+    let new_interval = body.poll_interval_ms.unwrap_or(old_interval);
+    let new_enabled = body.enabled.unwrap_or(old_enabled);
+
+    let result = sqlx::query!(
+        r#"INSERT INTO startgg_config (id, api_key, tournament_slug, event_id, poll_interval_ms, enabled, updated_at)
+           VALUES (1, ?1, ?2, ?3, ?4, ?5, CURRENT_TIMESTAMP)
+           ON CONFLICT(id) DO UPDATE SET
+             api_key        = COALESCE(NULLIF(?1, ''), api_key),
+             tournament_slug = ?2,
+             event_id        = ?3,
+             poll_interval_ms = ?4,
+             enabled         = ?5,
+             updated_at      = CURRENT_TIMESTAMP"#,
+        new_api_key,
+        new_slug,
+        new_event_id,
+        new_interval,
+        new_enabled,
+    )
+    .execute(&state.pool)
+    .await;
+
+    match result {
+        Ok(_) => {
+            // Reload and return (mask key)
+            match sqlx::query_as!(
+                crate::models::StartggConfig,
+                r#"SELECT id, api_key, tournament_slug, event_id, poll_interval_ms, enabled,
+                   updated_at as "updated_at: _" FROM startgg_config WHERE id = 1"#
+            )
+            .fetch_one(&state.pool)
+            .await
+            {
+                Ok(mut config) => {
+                    if !config.api_key.is_empty() {
+                        config.api_key = "***configured***".to_string();
+                    }
+                    (StatusCode::OK, Json(serde_json::json!(config))).into_response()
+                }
+                Err(e) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(ErrorResponse::new(e.to_string())),
+                )
+                    .into_response(),
+            }
+        }
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorResponse::new(e.to_string())),

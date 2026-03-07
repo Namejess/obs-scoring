@@ -3,7 +3,7 @@ pub mod startgg;
 
 use crate::state::AppState;
 use axum::{
-    routing::{get, patch, post},
+    routing::{get, patch, post, put},
     Router,
 };
 use std::sync::Arc;
@@ -31,7 +31,7 @@ pub fn create_router(state: Arc<AppState>) -> Router {
         )
         .route("/matches/:id/setCurrent", patch(matches::set_current))
         // start.gg — config & local cache
-        .route("/api/startgg/config", get(startgg::get_config))
+        .route("/api/startgg/config", get(startgg::get_config).put(startgg::put_config))
         .route("/api/startgg/local-sets", get(startgg::get_local_sets))
         // start.gg — proxy GraphQL
         .route("/api/startgg/tournaments", get(startgg::get_tournaments))

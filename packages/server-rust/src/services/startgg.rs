@@ -307,6 +307,7 @@ pub struct EventSetsResult {
 
 pub type StartggCache = Cache<String, serde_json::Value>;
 
+#[allow(dead_code)]
 pub fn build_cache() -> StartggCache {
     Cache::builder()
         .max_capacity(512)
@@ -713,6 +714,7 @@ pub async fn get_active_sets(
     .await
 }
 
+#[allow(dead_code)]
 pub async fn get_phase_group_sets(
     client: &Client,
     api_key: &str,
