@@ -43,6 +43,9 @@ pub struct GqlTournament {
     pub num_attendees: Option<i64>,
     pub state: Option<i64>,
     pub images: Option<Vec<GqlImage>>,
+    // Champ peuplé uniquement via getTournamentEvents — sinon []
+    #[serde(default)]
+    pub events: Vec<GqlEvent>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

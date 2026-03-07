@@ -60,7 +60,9 @@ pub struct StartggConfig {
 }
 
 /// Set start.gg (cache local SQLite)
+/// FromRow lit les colonnes snake_case SQLite, Serialize produit camelCase pour le frontend
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+#[serde(rename_all = "camelCase")]
 pub struct StartggSet {
     pub id: String,
     pub event_id: String,
