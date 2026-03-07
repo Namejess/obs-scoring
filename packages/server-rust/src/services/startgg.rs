@@ -181,6 +181,7 @@ pub struct GqlSetEvent {
 pub struct GqlEntrantSource {
     #[serde(rename = "type")]
     pub source_type: Option<String>,
+    #[serde(default)]
     pub source_id: Option<i64>,
     pub condition: Option<String>,
 }
@@ -406,8 +407,8 @@ query EventSetsQuery($eventId: ID!, $page: Int!, $perPage: Int!, $state: [Int]) 
       nodes {
         id identifier fullRoundText round state winnerId totalGames
         startedAt completedAt wPlacement lPlacement
-        entrant1Source { type sourceId condition }
-        entrant2Source { type sourceId condition }
+        entrant1Source { type condition }
+        entrant2Source { type condition }
         phaseGroup { id displayIdentifier phase { id name } }
         slots {
           slotIndex
@@ -568,12 +569,10 @@ pub fn map_set_for_bracket(set: &GqlSet, event_id: &str, event_name: Option<&str
         l_placement: set.l_placement,
         entrant1_source: set.entrant1_source.as_ref().map(|s| serde_json::json!({
             "type": s.source_type,
-            "sourceId": s.source_id,
             "condition": s.condition,
         })),
         entrant2_source: set.entrant2_source.as_ref().map(|s| serde_json::json!({
             "type": s.source_type,
-            "sourceId": s.source_id,
             "condition": s.condition,
         })),
     })
